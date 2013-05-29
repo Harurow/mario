@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
+using Microsoft.Win32;
 
 namespace mario
 {
@@ -30,9 +31,33 @@ namespace mario
 			Rectangle desk = Screen.GetWorkingArea(this);
 			Location = new Point(0, desk.Height - Size.Height);
 
-			animationTimer.Interval = 30;
+			int interval = 30;
+			Random rand = new Random();
+			int num = rand.Next(100);
+			if (num < 10)
+			{
+				interval = 33;
+			}
+			else if (num < 25)
+			{
+				interval = 35;
+			}
+			else if (num == 99)
+			{
+				interval = 40;
+			}
+
+			animationTimer.Interval = interval;
 			animationTimer.Enabled = true;
 			eventTimer.Enabled = true;
+
+			SystemEvents.SessionEnding += SystemEventsOnSessionEnding;
+		}
+
+		private void SystemEventsOnSessionEnding(object sender, SessionEndingEventArgs e)
+		{
+			SystemEvents.SessionEnding -= SystemEventsOnSessionEnding;
+			_mario.Kill();
 		}
 
 		protected override void OnPaint( PaintEventArgs e )
@@ -40,7 +65,6 @@ namespace mario
 			base.OnPaint(e);
 			_mario.Draw(e.Graphics, ClientRectangle);
 		}
-
 
 		private void timer_Tick( object sender, EventArgs e )
 		{
@@ -72,7 +96,7 @@ namespace mario
 
 			if (_mario.IsStop)
 			{
-				_mario.Dead();
+				_mario.Kill();
 			}
 		}
 
@@ -83,7 +107,7 @@ namespace mario
 			{
 				if (rand < 2)
 				{
-					_mario.Dead();
+					_mario.Kill();
 				}
 				else if (rand < 25)
 				{
@@ -116,6 +140,11 @@ namespace mario
 			{
 				MarioAction();
 			}
+		}
+
+		public void Kill()
+		{
+			_mario.Kill();
 		}
 	}
 }

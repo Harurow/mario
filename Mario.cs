@@ -21,13 +21,14 @@ namespace mario
 
 		private static readonly int[] JumpStep = new[] { 8, 8, 8, 7, 7, 6, 6, 5, 4, 3, 2, 1, 0 };
 		private static readonly int[] BrakeStep = new[] { 5, 4, 4, 5, 4, 4, 3, 4, 3, 2, 3, 2, 0, 1, 0 };
-		private static readonly int[] DeathStep = new[] { 8, 8, 7, 6, 5, 3, 1, 0, -1, -3, -4, -5, -7, -8, -10, -11, -13, -15 };
+		private static readonly int[] DeathStep = new[] { 8, 8, 7, 6, 5, 3, 1, 0, -1, -3, -4, -5, -7, -8, -10, -11, -13, -15, -20 };
 
 		private Bitmap _sprite;
 		private int _animeState;
 		private Rectangle _srcRect;
-		private int _poseCount = 40;
+		private int _pauseCount = 40;
 		private bool _moveRight = true;
+		private int _speed = 5;
 
 		public Size Size
 		{
@@ -64,25 +65,37 @@ namespace mario
 			return false;
 		}
 
-		public bool Dead()
+		public void Kill()
 		{
-			if (IsRunning || IsStop)
-			{
-				_animeState = 300;
-				return true;
-			}
-			return false;
+			_animeState = 300;
 		}
 
 		public Mario()
 		{
 			var rand = new Random();
 			_sprite = Properties.Resources.MarioSprites;
-			if (rand.Next(100) < 5)
+			if (rand.Next(100) < 8)
 			{
 				Change();
 			}
 			_srcRect = GetRect(RStand);
+
+			if (rand.Next(100) < 10)
+			{
+				_speed++;
+				if (rand.Next(100) < 10)
+				{
+					_speed++;
+				}
+			}
+			else if (rand.Next(100) < 20)
+			{
+				_speed--;
+				if (rand.Next(100) < 10)
+				{
+					_speed--;
+				}
+			}
 		}
 
 		private void Change()
@@ -109,6 +122,7 @@ namespace mario
 			}
 			bmp.Palette = palette;
 			_sprite = bmp;
+			_speed += 3;
 		}
 
 		private Rectangle GetRect( Point pt )
@@ -134,17 +148,20 @@ namespace mario
 
 		public void Animate(out int x, out int y)
 		{
-			int xMove = _moveRight ? 5 : -5;
+			int xMove = _moveRight ? _speed : -_speed;
 			int yMove = 0;
 
 			if (_animeState == 0)
 			{
 				// standing
 				xMove = 0;
-				if (--_poseCount == 0)
+				if (--_pauseCount == 0)
 				{
 					_animeState++;
-					_poseCount = 50;
+					_pauseCount = 30;
+					
+					var rand = new Random();
+					_pauseCount += rand.Next(40);
 				}
 				_srcRect = GetRect(_moveRight ? RStand : LStand);
 			}
@@ -174,6 +191,7 @@ namespace mario
 			}
 			else if (100 <= _animeState && _animeState < 200)
 			{
+				// ジャンプ
 				int jstep = _animeState - 100;
 				if (jstep < JumpStep.Length)
 				{
@@ -198,22 +216,23 @@ namespace mario
 			}
 			else if (200 <= _animeState && _animeState < 300)
 			{
+				// ブレーキ
 				int bstep = _animeState - 200;
 				if (bstep < BrakeStep.Length)
 				{
 					xMove = BrakeStep[bstep] * ( _moveRight ? 1 : -1 );
 					_animeState++;
+					_srcRect = GetRect(!_moveRight ? RBrake : LBrake);
 				}
 				else
 				{
 					_moveRight = !_moveRight;
 					_animeState = 0;
 				}
-
-				_srcRect = GetRect(!_moveRight ? RBrake : LBrake);
 			}
 			else if (300 <= _animeState)
 			{
+				// 退場
 				int dstep = _animeState - 300;
 				xMove = 0;
 				if (dstep < DeathStep.Length)
