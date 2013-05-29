@@ -28,16 +28,25 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
+			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
 			this.SuspendLayout();
 			// 
 			// MainForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(186, 82);
+			this.BackColor = System.Drawing.Color.Black;
+			this.ClientSize = new System.Drawing.Size(64, 64);
+			this.ControlBox = false;
+			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
+			this.Icon = ( (System.Drawing.Icon)( resources.GetObject("$this.Icon") ) );
+			this.MinimizeBox = false;
 			this.Name = "MainForm";
+			this.ShowIcon = false;
 			this.ShowInTaskbar = false;
-			this.Text = "MainForm";
+			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+			this.Text = "Mario";
+			this.TransparencyKey = System.Drawing.Color.Black;
 			this.ResumeLayout(false);
 
 		}

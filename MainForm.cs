@@ -6,23 +6,24 @@ namespace mario
 {
 	public partial class MainForm : Form
 	{
-		List<SpriteForm> sprites = new List<SpriteForm>();
+		private readonly List<SpriteForm> _sprites = new List<SpriteForm>();
 
 		public MainForm()
 		{
 			InitializeComponent();
 		}
 
-		protected override void OnLoad( EventArgs e )
+		protected override void OnLoad(EventArgs e)
 		{
 			base.OnLoad(e);
 
-			Add();
-
-			Visible = false;
+			for (int i = 0; i < Program.MarioCount; i++)
+			{
+				Add();
+			}
 		}
 
-		protected override void OnMouseClick( MouseEventArgs e )
+		protected override void OnMouseClick(MouseEventArgs e)
 		{
 			base.OnMouseClick(e);
 
@@ -39,14 +40,14 @@ namespace mario
 		public void Add()
 		{
 			var sprite = new SpriteForm();
-			sprite.Closed += SpriteOnClosed;
-			sprites.Add(sprite);
-			sprite.Show();
+			sprite.FormClosed += SpriteOnClosed;
+			_sprites.Add(sprite);
+			sprite.Show(this);
 		}
 
 		public void Kill()
 		{
-			foreach (var sprite in sprites)
+			foreach (var sprite in _sprites)
 			{
 				sprite.Kill();
 			}
@@ -54,7 +55,29 @@ namespace mario
 
 		private void SpriteOnClosed(object sender, EventArgs eventArgs)
 		{
-			sprites.Remove((SpriteForm) sender);
+			var sprite = (SpriteForm)sender;
+			_sprites.Remove(sprite);
+			sprite.FormClosed -= SpriteOnClosed;
+
+			if (_sprites.Count == 0)
+			{
+				Close();
+			}
+		}
+
+		protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
+		{
+			base.OnClosing(e);
+
+			if (_sprites.Count != 0)
+			{
+				Kill();
+				e.Cancel = true;
+			}
+			else
+			{
+				e.Cancel = false;
+			}
 		}
 	}
 }

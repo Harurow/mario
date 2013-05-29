@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 
 namespace mario
 {
@@ -19,14 +20,14 @@ namespace mario
 		private static readonly Point LJump = new Point(0, 0);
 		private static readonly Point Death = new Point(12, 0);
 
-		private static readonly int[] JumpStep = new[] { 8, 8, 8, 7, 7, 6, 6, 5, 4, 3, 2, 1, 0 };
+		private static readonly int[] JumpStep = new[] { 10, 9, 8, 7, 6, 5, 5, 4, 3, 3, 2, 2, 1, 1, 0 };
 		private static readonly int[] BrakeStep = new[] { 5, 4, 4, 5, 4, 4, 3, 4, 3, 2, 3, 2, 0, 1, 0 };
-		private static readonly int[] DeathStep = new[] { 8, 8, 7, 6, 5, 3, 1, 0, -1, -3, -4, -5, -7, -8, -10, -11, -13, -15, -20 };
+		private static readonly int[] DeathStep = new[] { 8, 7, 6, 5, 5, 4, 3, 3, 2, 2, 1, 1, 0, 0, -1, -1, -2, -2, -3, -3, -4, -5, -5, -6, -7, -8, -9, -10 };
 
 		private Bitmap _sprite;
 		private int _animeState;
 		private Rectangle _srcRect;
-		private int _pauseCount = 40;
+		private int _pauseCount = 20;
 		private bool _moveRight = true;
 		private int _speed = 5;
 
@@ -42,7 +43,22 @@ namespace mario
 
 		public bool IsRunning
 		{
-			get { return 1 <= _animeState && _animeState <= 5; }
+			get { return 0 < _animeState && _animeState < 100; }
+		}
+
+		public bool IsJumping
+		{
+			get { return 100 <= _animeState && _animeState < 200; }
+		}
+
+		public bool IsTruning
+		{
+			get { return 200 <= _animeState && _animeState < 300; }
+		}
+
+		public bool IsDying
+		{
+			get { return 300 <= _animeState && _animeState < 400; }
 		}
 
 		public bool Jump()
@@ -67,38 +83,42 @@ namespace mario
 
 		public void Kill()
 		{
-			_animeState = 300;
+			if (!IsDying)
+			{
+				_animeState = 300;
+			}
 		}
 
 		public Mario()
 		{
-			var rand = new Random();
 			_sprite = Properties.Resources.MarioSprites;
-			if (rand.Next(100) < 8)
+			if (Program.Rand.Next(100) < 8)
 			{
-				Change();
+				ToLuigi();
 			}
 			_srcRect = GetRect(RStand);
 
-			if (rand.Next(100) < 10)
+			if (Program.Rand.Next(100) < 10)
 			{
 				_speed++;
-				if (rand.Next(100) < 10)
+				if (Program.Rand.Next(100) < 10)
 				{
 					_speed++;
 				}
 			}
-			else if (rand.Next(100) < 20)
+			else if (Program.Rand.Next(100) < 20)
 			{
 				_speed--;
-				if (rand.Next(100) < 10)
+				if (Program.Rand.Next(100) < 10)
 				{
 					_speed--;
 				}
 			}
+
+			_pauseCount += Program.Rand.Next(20);
 		}
 
-		private void Change()
+		private void ToLuigi()
 		{
 			Color hair = Color.FromArgb(0xAC, 0x7C, 0x00);
 			Color cap = Color.FromArgb(0xf8, 0x38, 0x00);
@@ -143,6 +163,7 @@ namespace mario
 
 		public void Draw(Graphics g, Rectangle rect)
 		{
+			g.InterpolationMode = InterpolationMode.NearestNeighbor;
 			g.DrawImage(_sprite, rect, _srcRect, GraphicsUnit.Pixel);
 		}
 
@@ -158,10 +179,9 @@ namespace mario
 				if (--_pauseCount == 0)
 				{
 					_animeState++;
-					_pauseCount = 30;
-					
-					var rand = new Random();
-					_pauseCount += rand.Next(40);
+					_pauseCount = 10;
+
+					_pauseCount += Program.Rand.Next(50);
 				}
 				_srcRect = GetRect(_moveRight ? RStand : LStand);
 			}
@@ -197,6 +217,7 @@ namespace mario
 				{
 					yMove = JumpStep[jstep];
 					_animeState++;
+					_srcRect = GetRect(_moveRight ? RJump : LJump);
 				}
 				else
 				{
@@ -208,11 +229,10 @@ namespace mario
 					}
 					else
 					{
+						_srcRect = GetRect(_moveRight ? RWalk1: LWalk1);
 						_animeState = 1;
 					}
 				}
-
-				_srcRect = GetRect(_moveRight ? RJump : LJump);
 			}
 			else if (200 <= _animeState && _animeState < 300)
 			{
@@ -228,6 +248,7 @@ namespace mario
 				{
 					_moveRight = !_moveRight;
 					_animeState = 0;
+					xMove = 0;
 				}
 			}
 			else if (300 <= _animeState)

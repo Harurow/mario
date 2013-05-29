@@ -7,48 +7,38 @@ namespace mario
 {
 	public sealed partial class SpriteForm : Form
 	{
-		private Random _rand = new Random();
 		private Mario _mario = new Mario();
+		private int _zoom = 10;
 
 		public SpriteForm()
 		{
 			InitializeComponent();
 
-			SetStyle(ControlStyles.SupportsTransparentBackColor, true);
-			SetStyle(ControlStyles.StandardDoubleClick, false);
-			TopMost = true;
+			DoubleBuffered = true;
 
-			BackColor = Color.Black;
-			TransparencyKey = Color.Black;
+			_zoom = Program.Zoom;
 		}
 
 		protected override void OnLoad( EventArgs e )
 		{
 			base.OnLoad(e);
 
-			Size = _mario.Size;
+			Size = new Size(_mario.Size.Width * _zoom,
+			                _mario.Size.Height * _zoom);
 
 			Rectangle desk = Screen.GetWorkingArea(this);
 			Location = new Point(0, desk.Height - Size.Height);
 
-			int interval = 30;
-			Random rand = new Random();
-			int num = rand.Next(100);
-			if (num < 10)
+			int interval = 35;
+			int num = Program.Rand.Next(100);
+			if (num < 50)
 			{
-				interval = 33;
-			}
-			else if (num < 25)
-			{
-				interval = 35;
-			}
-			else if (num == 99)
-			{
-				interval = 40;
+				interval += num/4;
 			}
 
 			animationTimer.Interval = interval;
 			animationTimer.Enabled = true;
+			eventTimer.Interval = 2500;
 			eventTimer.Enabled = true;
 
 			SystemEvents.SessionEnding += SystemEventsOnSessionEnding;
@@ -66,25 +56,35 @@ namespace mario
 			_mario.Draw(e.Graphics, ClientRectangle);
 		}
 
-		private void timer_Tick( object sender, EventArgs e )
+		private void EventTimerTick( object sender, EventArgs e )
+		{
+			if (Program.Rand.Next(100) < 25)
+			{
+				MarioAction();
+			}
+		}
+
+		private void AnimationTimerTick( object sender, EventArgs e )
 		{
 			int xMove, yMove;
 			_mario.Animate(out xMove, out yMove);
 
-			Location = new Point(Location.X + xMove, Location.Y - yMove);
-
-			Invalidate();
+			var point = new Point(Location.X + xMove * _zoom, Location.Y - yMove * _zoom);
 
 			Rectangle desk = Screen.GetWorkingArea(this);
-			if (xMove > 0 && desk.Right < Location.X)
+			if (xMove > 0 && desk.Right < point.X)
 			{
-				Location = new Point(-_mario.Size.Width, Location.Y);
+				point = new Point(-Size.Width, point.Y);
 			}
-			else if (xMove < 0 && Location.X < desk.Left - _mario.Size.Width)
+			else if (xMove < 0 && point.X < desk.Left - Size.Width)
 			{
-				Location = new Point(desk.Right, Location.Y);
+				point = new Point(desk.Right, point.Y);
 			}
-			if (yMove != 0 && desk.Bottom < Location.Y)
+
+			Invalidate();
+			Location = point;
+
+			if (yMove != 0 && desk.Bottom < point.Y)
 			{
 				Close();
 			}
@@ -102,7 +102,7 @@ namespace mario
 
 		private void MarioAction()
 		{
-			int rand = _rand.Next(100);
+			int rand = Program.Rand.Next(100);
 			if (_mario.IsRunning)
 			{
 				if (rand < 2)
@@ -124,19 +124,11 @@ namespace mario
 		{
 			base.OnMouseEnter(e);
 
-			if (ModifierKeys == Keys.Control)
+			if ((ModifierKeys & Keys.Control) == Keys.Control)
 			{
 				_mario.Turn();
 			}
 			else
-			{
-				MarioAction();
-			}
-		}
-
-		private void eventTimer_Tick( object sender, EventArgs e )
-		{
-			if (_rand.Next(100) < 30)
 			{
 				MarioAction();
 			}
