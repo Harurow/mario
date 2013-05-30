@@ -7,14 +7,16 @@ namespace mario
 {
 	public sealed partial class SpriteForm : Form
 	{
-		private Mario _mario = new Mario();
-		private int _zoom = 1;
+		private readonly Mario _mario = new Mario();
+		private readonly int _zoom = 1;
 
 		public SpriteForm()
 		{
 			InitializeComponent();
 
 			DoubleBuffered = true;
+			SetStyle(ControlStyles.StandardClick, true);
+			SetStyle(ControlStyles.Selectable, false);
 
 			_zoom = Program.Zoom;
 		}
@@ -60,7 +62,7 @@ namespace mario
 		private void AnimationTimerTick( object sender, EventArgs e )
 		{
 			int xMove, yMove;
-			_mario.Animate(out xMove, out yMove);
+			bool invalidate = _mario.Animate(out xMove, out yMove);
 
 			var point = new Point(Location.X + xMove * _zoom, Location.Y - yMove * _zoom);
 
@@ -74,7 +76,11 @@ namespace mario
 				point = new Point(desk.Right, point.Y);
 			}
 
-			Invalidate();
+			if (invalidate)
+			{
+				Invalidate();
+			}
+
 			Location = point;
 
 			if (yMove != 0 && desk.Bottom < point.Y)
@@ -87,9 +93,33 @@ namespace mario
 		{
 			base.OnMouseClick(e);
 
-			if (_mario.IsStop)
+			if (_mario.IsStop && e.Button == MouseButtons.Left)
 			{
-				_mario.Kill();
+				if (ModifierKeys == (Keys.Alt | Keys.Control | Keys.Shift))
+				{
+					foreach (Form f in Application.OpenForms)
+					{
+						var mf = f as MainForm;
+						if (mf != null)
+						{
+							mf.Kill();
+							break;
+						}
+					}
+				}
+				else
+				{
+					_mario.Kill();
+				}
+			}
+			else if (_mario.IsStop && e.Button == MouseButtons.Right)
+			{
+				_mario.AddPauseCount(120);
+				string talk = _mario.IsMario ? "It's me! Mario!" : "It's me! Luigi!";
+				string text = string.Format("{0}\nMove:{1:#,##0}pixels\nJump:{2:#,##0}\nTurn:{3:#,##0}",
+								talk, _mario.MovePixels, _mario.JumpCount, _mario.TurnCount);
+				var tt = new ToolTip {IsBalloon = true};
+				tt.Show(text, this);
 			}
 		}
 
@@ -98,7 +128,7 @@ namespace mario
 			int rand = Program.Rand.Next(100);
 			if (_mario.IsRunning)
 			{
-				if (rand < 2)
+				if (rand < 2 && Program.AutoDeath)
 				{
 					_mario.Kill();
 				}
