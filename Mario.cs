@@ -36,6 +36,11 @@ namespace mario
 			get { return _srcRect.Size; }
 		}
 
+		public int XHint { get; set; }
+		public int YHint { get; set; }
+
+		#region status
+
 		public bool IsStop
 		{
 			get { return _animeState == 0; }
@@ -60,6 +65,10 @@ namespace mario
 		{
 			get { return 300 <= _animeState && _animeState < 400; }
 		}
+
+		#endregion
+
+		#region action
 
 		public bool Jump()
 		{
@@ -89,6 +98,8 @@ namespace mario
 			}
 		}
 
+		#endregion
+
 		public Mario()
 		{
 			_sprite = Properties.Resources.MarioSprites;
@@ -96,7 +107,7 @@ namespace mario
 			{
 				ToLuigi();
 			}
-			_srcRect = GetRect(RStand);
+			_srcRect = GetImageRect(RStand);
 
 			if (Program.Rand.Next(100) < 10)
 			{
@@ -145,12 +156,7 @@ namespace mario
 			_speed += 3;
 		}
 
-		private Rectangle GetRect( Point pt )
-		{
-			return GetRect(pt.X, pt.Y);
-		}
-
-		private Rectangle GetRect( int x, int y )
+		private Rectangle GetImageRect( Point pt )
 		{
 			const int cx = 13;
 			const int cy = 1;
@@ -158,7 +164,7 @@ namespace mario
 			int w = _sprite.Width / cx;
 			int h = _sprite.Height / cy;
 
-			return new Rectangle(w * x, h * y, w, h);
+			return new Rectangle(w * pt.X, h * pt.Y, w, h);
 		}
 
 		public void Draw(Graphics g, Rectangle rect)
@@ -183,31 +189,31 @@ namespace mario
 
 					_pauseCount += Program.Rand.Next(50);
 				}
-				_srcRect = GetRect(_moveRight ? RStand : LStand);
+				_srcRect = GetImageRect(_moveRight ? RStand : LStand);
 			}
 			else if (_animeState == 1)
 			{
 				// walk 1
 				_animeState++;
-				_srcRect = GetRect(_moveRight ? RWalk1 : LWalk1);
+				_srcRect = GetImageRect(_moveRight ? RWalk1 : LWalk1);
 			}
 			else if (_animeState == 2 || _animeState == 4)
 			{
 				// walk 2
 				_animeState++;
-				_srcRect = GetRect(_moveRight ? RWalk2 : LWalk2);
+				_srcRect = GetImageRect(_moveRight ? RWalk2 : LWalk2);
 			}
 			else if (_animeState == 3)
 			{
 				// walk 3
 				_animeState++;
-				_srcRect = GetRect(_moveRight ? RWalk3 : LWalk3);
+				_srcRect = GetImageRect(_moveRight ? RWalk3 : LWalk3);
 			}
 			else if (_animeState == 5)
 			{
 				// walk 1
 				_animeState = 2;
-				_srcRect = GetRect(_moveRight ? RWalk1 : LWalk1);
+				_srcRect = GetImageRect(_moveRight ? RWalk1 : LWalk1);
 			}
 			else if (100 <= _animeState && _animeState < 200)
 			{
@@ -217,7 +223,7 @@ namespace mario
 				{
 					yMove = JumpStep[jstep];
 					_animeState++;
-					_srcRect = GetRect(_moveRight ? RJump : LJump);
+					_srcRect = GetImageRect(_moveRight ? RJump : LJump);
 				}
 				else
 				{
@@ -229,7 +235,7 @@ namespace mario
 					}
 					else
 					{
-						_srcRect = GetRect(_moveRight ? RWalk1: LWalk1);
+						_srcRect = GetImageRect(_moveRight ? RWalk1: LWalk1);
 						_animeState = 1;
 					}
 				}
@@ -242,7 +248,7 @@ namespace mario
 				{
 					xMove = BrakeStep[bstep] * ( _moveRight ? 1 : -1 );
 					_animeState++;
-					_srcRect = GetRect(!_moveRight ? RBrake : LBrake);
+					_srcRect = GetImageRect(!_moveRight ? RBrake : LBrake);
 				}
 				else
 				{
@@ -265,7 +271,7 @@ namespace mario
 				{
 					yMove = DeathStep[DeathStep.Length-1];
 				}
-				_srcRect = GetRect(Death);
+				_srcRect = GetImageRect(Death);
 			}
 
 			x = xMove;

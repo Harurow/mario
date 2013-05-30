@@ -17,12 +17,14 @@ namespace mario
 		[STAThread]
 		static void Main(string[] args)
 		{
+			bool oneWindow = false;
 			for (int i = 0; i < args.Length; i++)
 			{
-				if (args[i].ToLower().StartsWith("/z:"))
+				string arg = args[i].ToLower();
+				if (arg.StartsWith("/z:"))
 				{
 					int zoom;
-					if (int.TryParse(args[i].Substring(3), out zoom))
+					if (int.TryParse(arg.Substring(3), out zoom))
 					{
 						if (1 < zoom && zoom <= 16)
 						{
@@ -30,22 +32,30 @@ namespace mario
 						}
 					}
 				}
-				if (args[i].ToLower().StartsWith("/m:"))
+				if (arg.StartsWith("/m:"))
 				{
 					int marios;
-					if (int.TryParse(args[i].Substring(3), out marios))
+					if (int.TryParse(arg.Substring(3), out marios))
 					{
-						if (1 < marios && marios <= 32)
-						{
-							MarioCount = marios;
-						}
+						MarioCount = Math.Min(32, Math.Max(1, marios));
 					}
+				}
+				if (arg == "/onewindow")
+				{
+					oneWindow = true;
 				}
 			}
 
 			Application.EnableVisualStyles();
 			Application.SetCompatibleTextRenderingDefault(false);
-			Application.Run(new MainForm());
+			if (oneWindow)
+			{
+				Application.Run(new SpriteForm2());
+			}
+			else
+			{
+				Application.Run(new MainForm());
+			}
 		}
 	}
 }
