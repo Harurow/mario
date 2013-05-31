@@ -8,7 +8,7 @@ namespace mario
 	public sealed partial class SpriteForm : Form
 	{
 		private Mario _mario = new Mario();
-		private int _zoom = 10;
+		private int _zoom = 1;
 
 		public SpriteForm()
 		{
@@ -29,16 +29,9 @@ namespace mario
 			Rectangle desk = Screen.GetWorkingArea(this);
 			Location = new Point(0, desk.Height - Size.Height);
 
-			int interval = 35;
-			int num = Program.Rand.Next(100);
-			if (num < 50)
-			{
-				interval += num/4;
-			}
-
-			animationTimer.Interval = interval;
-			animationTimer.Enabled = true;
+			animationTimer.Interval = 35;
 			eventTimer.Interval = 2500;
+			animationTimer.Enabled = true;
 			eventTimer.Enabled = true;
 
 			SystemEvents.SessionEnding += SystemEventsOnSessionEnding;
