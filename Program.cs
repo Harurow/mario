@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Windows.Forms;
 
 namespace mario
@@ -10,6 +8,7 @@ namespace mario
 		public static Random Rand = new Random();
 		public static int Zoom = 1;
 		public static int MarioCount = 1;
+		public static bool AutoDeath = true;
 
 		/// <summary>
 		/// アプリケーションのメイン エントリ ポイントです。
@@ -43,6 +42,10 @@ namespace mario
 				if (arg == "/onewindow")
 				{
 					oneWindow = true;
+				}
+				if (arg == "/nonautodeath")
+				{
+					AutoDeath = false;
 				}
 			}
 

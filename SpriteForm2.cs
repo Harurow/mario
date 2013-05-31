@@ -8,8 +8,8 @@ namespace mario
 {
 	public sealed partial class SpriteForm2 : Form
 	{
-		private List<Mario> _marios = new List<Mario>();
-		private int _zoom = 1;
+		private readonly List<Mario> _marios = new List<Mario>();
+		private readonly int _zoom = 1;
 
 		public SpriteForm2()
 		{
@@ -147,7 +147,18 @@ namespace mario
 				var r = CalcMarioArea(m);
 				if (m.IsStop && r.Contains(e.Location))
 				{
-					m.Kill();
+					if (ModifierKeys == (Keys.Alt | Keys.Control | Keys.Shift))
+					{
+						foreach (var mario in _marios)
+						{
+							mario.Kill();
+						}
+					}
+					else
+					{
+						m.Kill();
+					}
+					break;
 				}
 			}
 		}
@@ -157,7 +168,7 @@ namespace mario
 			int rand = Program.Rand.Next(100);
 			if (m.IsRunning)
 			{
-				if (rand < 2)
+				if (rand < 2 && Program.AutoDeath)
 				{
 					m.Kill();
 				}
