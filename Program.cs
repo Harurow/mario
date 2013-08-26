@@ -9,6 +9,8 @@ namespace mario
 		public static int Zoom = 1;
 		public static int MarioCount = 1;
 		public static bool AutoDeath = true;
+		public static bool ShowUsage = false;
+		public static string Message = string.Empty;
 
 		/// <summary>
 		/// アプリケーションのメイン エントリ ポイントです。
@@ -20,33 +22,65 @@ namespace mario
 			for (int i = 0; i < args.Length; i++)
 			{
 				string arg = args[i].ToLower();
+
+				if (arg.StartsWith("-"))
+				{
+					arg = "/" + arg.Substring(1);
+				}
+
 				if (arg.StartsWith("/z:"))
 				{
 					int zoom;
-					if (int.TryParse(arg.Substring(3), out zoom))
+					if (int.TryParse(arg.Substring("/z:".Length), out zoom))
 					{
 						if (1 < zoom && zoom <= 16)
 						{
 							Zoom = zoom;
+							continue;
 						}
 					}
 				}
 				if (arg.StartsWith("/m:"))
 				{
 					int marios;
-					if (int.TryParse(arg.Substring(3), out marios))
+					if (int.TryParse(arg.Substring("/m:".Length), out marios))
 					{
-						MarioCount = Math.Min(32, Math.Max(1, marios));
+						if (1 < marios && marios <= 256)
+						{
+							MarioCount = marios;
+							continue;
+						}
 					}
 				}
 				if (arg == "/onewindow")
 				{
 					oneWindow = true;
+					continue;
 				}
 				if (arg == "/nonautodeath")
 				{
 					AutoDeath = false;
+					continue;
 				}
+				if (arg.StartsWith("/msg:"))
+				{
+					Message = arg.Substring("/msg:".Length);
+					AutoDeath = false;
+					continue;
+				}
+
+				ShowUsage = true;
+			}
+
+			if (ShowUsage)
+			{
+				Console.WriteLine("Mario.exe usage");
+				Console.WriteLine("Mario.exe [/z:<1-16>]     zoom ratio");
+				Console.WriteLine("          [/m:<1-256>]    number of mario");
+				Console.WriteLine("          [/onewindow]    one window mode");
+				Console.WriteLine("          [/nonautodeath] disable auto death");
+				Console.WriteLine("          [/msg:<text>]   mario message");
+				return;
 			}
 
 			Application.EnableVisualStyles();

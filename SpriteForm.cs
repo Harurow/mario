@@ -9,6 +9,7 @@ namespace mario
 	{
 		private readonly Mario _mario = new Mario();
 		private readonly int _zoom = 1;
+		private ToolTip _toolTip;
 
 		public SpriteForm()
 		{
@@ -39,6 +40,12 @@ namespace mario
 			SystemEvents.SessionEnding += SystemEventsOnSessionEnding;
 		}
 
+		protected override void OnShown(EventArgs e)
+		{
+			base.OnShown(e);
+			ShowMessage();
+		}
+
 		private void SystemEventsOnSessionEnding(object sender, SessionEndingEventArgs e)
 		{
 			SystemEvents.SessionEnding -= SystemEventsOnSessionEnding;
@@ -53,16 +60,41 @@ namespace mario
 
 		private void EventTimerTick( object sender, EventArgs e )
 		{
-			if (Program.Rand.Next(100) < 25)
+			if (Program.Rand.Next(100) < (string.IsNullOrEmpty(Program.Message) ? 25 : 80))
 			{
 				MarioAction();
+			}
+		}
+
+		private void ShowMessage()
+		{
+			if (!string.IsNullOrEmpty(Program.Message) && _toolTip == null)
+			{
+				string text = Program.Message;
+				var tt = new ToolTip {IsBalloon = true, ShowAlways = true};
+				this.Activate();
+				tt.Show(text, this);
+				_toolTip = tt;
 			}
 		}
 
 		private void AnimationTimerTick( object sender, EventArgs e )
 		{
 			int xMove, yMove;
+			bool lastMarioIsStop = _mario.IsStop;
 			bool invalidate = _mario.Animate(out xMove, out yMove);
+			if (!lastMarioIsStop && _mario.IsStop && !string.IsNullOrEmpty(Program.Message))
+			{
+				ShowMessage();
+			}
+			else
+			{
+				if (_toolTip != null && !_mario.IsStop)
+				{
+					_toolTip.Dispose();
+					_toolTip = null;
+				}
+			}
 
 			var point = new Point(Location.X + xMove * _zoom, Location.Y - yMove * _zoom);
 
@@ -118,8 +150,21 @@ namespace mario
 				string talk = _mario.IsMario ? "It's me! Mario!" : "It's me! Luigi!";
 				string text = string.Format("{0}\nMove:{1:#,##0}pixels\nJump:{2:#,##0}\nTurn:{3:#,##0}",
 								talk, _mario.MovePixels, _mario.JumpCount, _mario.TurnCount);
+
+				if (!string.IsNullOrEmpty(Program.Message))
+				{
+					text += "\n" + Program.Message;
+				}
+
+				if (_toolTip != null)
+				{
+					_toolTip.Dispose();
+					_toolTip = null;
+				}
+
 				var tt = new ToolTip {IsBalloon = true};
 				tt.Show(text, this);
+				_toolTip = tt;
 			}
 		}
 
@@ -132,7 +177,7 @@ namespace mario
 				{
 					_mario.Kill();
 				}
-				else if (rand < 25)
+				else if (rand < (string.IsNullOrEmpty(Program.Message) ? 25 : 70))
 				{
 					_mario.Turn();
 				}
