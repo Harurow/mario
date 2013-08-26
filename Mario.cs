@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Windows.Forms;
 
 namespace mario
 {
@@ -179,6 +180,11 @@ namespace mario
 			_srcRect = GetImageRect(RStand);
 			UpdateSpeed();
 			_pauseCount += Program.Rand.Next(20);
+
+			if (!string.IsNullOrEmpty(Program.Message))
+			{
+				_pauseCount += 30;
+			}
 		}
 
 		private void ToLuigi()
@@ -240,12 +246,15 @@ namespace mario
 					UpdateSpeed();
 
 					_animeState = RunFrame;
-					_pauseCount = 10;
+					_pauseCount = string.IsNullOrEmpty(Program.Message) ? 10 : 20;
 					_pauseCount += Program.Rand.Next(50);
 
-					if (Program.Rand.Next(100) < 10)
+					if (string.IsNullOrEmpty(Program.Message))
 					{
-						_pauseCount = 1;
+						if (Program.Rand.Next(100) < 10)
+						{
+							_pauseCount = 1;
+						}
 					}
 				}
 
