@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using System.Windows.Forms;
 
 namespace mario
@@ -18,6 +19,7 @@ namespace mario
 		[STAThread]
 		static void Main(string[] args)
 		{
+			Console.OpenStandardOutput();
 			bool oneWindow = false;
 			for (int i = 0; i < args.Length; i++)
 			{
@@ -74,12 +76,15 @@ namespace mario
 
 			if (ShowUsage)
 			{
-				Console.WriteLine("Mario.exe usage");
-				Console.WriteLine("Mario.exe [/z:<1-16>]     zoom ratio");
-				Console.WriteLine("          [/m:<1-256>]    number of mario");
-				Console.WriteLine("          [/onewindow]    one window mode");
-				Console.WriteLine("          [/nonautodeath] disable auto death");
-				Console.WriteLine("          [/msg:<text>]   mario message");
+				var sb = new StringBuilder();
+				sb.AppendLine("Mario.exe usage");
+				sb.AppendLine("Mario.exe [/z:<1-16>]     zoom ratio");
+				sb.AppendLine("          [/m:<1-256>]    number of mario");
+				sb.AppendLine("          [/onewindow]    one window mode");
+				sb.AppendLine("          [/nonautodeath] disable auto death");
+				sb.AppendLine("          [/msg:<text>]   mario message");
+
+				MessageBox.Show(sb.ToString(), "Mario", MessageBoxButtons.OK);
 				return;
 			}
 
